@@ -5,13 +5,14 @@ L=[]
 File_updated_if_add = False # track if file already updated and saved
 File_updated_if_edit = False # track if file already updated and saved
 File_updated_if_del = False # track if file already updated and saved 
+File_updated_if_markAsDone = False # track if file already updated and saved 
 def menu():
     global L
     while True:
         print(Fore.GREEN +'\t 📝 MY TO-DO LIST \n'+Style.RESET_ALL)
         print(Fore.RED + '1.' + Style.RESET_ALL + ' View/Edit Tasks')
         print(Fore.RED + '2.' + Style.RESET_ALL + ' Add Task')
-        print(Fore.RED + '3.' + Style.RESET_ALL + ' Mark Task as Done')
+        print(Fore.RED + '3.' + Style.RESET_ALL + ' Mark Task as Done/Not Done')
         print(Fore.RED + '4.' + Style.RESET_ALL + ' Delete Task')
         print(Fore.RED + '5.' + Style.RESET_ALL + ' Save To File')
         print(Fore.RED + '6.' + Style.RESET_ALL + ' Exit \n')
@@ -21,7 +22,7 @@ def menu():
         elif choice == 2:
             add_task()
         elif choice == 3:
-            Mark_task_asDone()
+            Mark_task_asDone(L)
         elif choice == 4:
             delete_task(L)
         elif choice == 5:
@@ -38,8 +39,11 @@ def view_tasks(L):
         L = json.load(f)
     if len(L)> 0:
         print(Fore.GREEN + 'Your Tasks: ' + Style.RESET_ALL)
-        for i,e in enumerate(L,start=1):
-            print('[ ]', Fore.RED , i,'.' , Style.RESET_ALL , e)
+        for i,task in enumerate(L, start=1):
+            if task['done']:
+                print('[✅ ]',Fore.RED , i,'.' , Style.RESET_ALL , task['name'])
+            else:
+                print('[ ]',Fore.RED , i,'.' , Style.RESET_ALL , task['name'])
         print()
         print('[ ] = not done, [✅ ] = done')
         choice = int(input('press 1 to edit existing task or 0 to go back to Menu: '))
@@ -57,8 +61,8 @@ def add_task():
     global File_updated_if_add
     with open('To-Do-List.json','r',encoding='utf-8') as f:
         L = json.load(f)
-    task= input('Enter new Task: ')
-    L.append(task)
+    task= input('Enter new Task: ')    
+    L.append({'name':task, 'done':False})
     save_to_file(L)
     File_updated_if_add = True
     print(Fore.GREEN,'Task added successfully!',Style.RESET_ALL)
@@ -70,47 +74,79 @@ def add_task():
     
 
 def edit_task(L):
-    '''if len(L)>0:
-        print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
-        for i,e in enumerate(L,start=1):
-            print('[ ]',Fore.RED,i,'.',Style.RESET_ALL,e)
-        print()
-        print('[ ] = not done, [✅ ] = done')
-    else:
-        print(Fore.GREEN,'Your To-Do List is empty, Kindly add a new task:',Style.RESET_ALL,'\n')
-        menu() '''
+    
     while True:
         global File_updated_if_edit
         index_task = int(input('Kindly type the task number which you want to edit:'))
         new_msg = input('Please type your new Task:')
         if 0<index_task<=len(L):
-            L[index_task-1] = new_msg
+            L[index_task-1] = {'name':new_msg, 'done':L[index_task-1]['done']}
             save_to_file(L)
             File_updated_if_edit = True
             print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
-            for i,e in enumerate(L,start=1):
-                print('[ ]',Fore.RED,i,'.',Style.RESET_ALL,e)
+            for i,task in enumerate(L,start=1):
+                if task['done']:
+                    print('[✅ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
+                else:
+                    print('[ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
             print()
             print('[ ] = not done, [✅ ] = done')
             choice=int(input('press 1 to edit another task or 0 to go back to Menu: '))
             if choice == 0:
                 menu()
             elif choice == 1:
-                edit_task()
+                edit_task(L)
             else:
                 choice=int(input('Sorry you should press 1 to edit another task or 0 to go back to Menu: '))
-
 
         else:
             print('index out of range, please try again')
             continue
 
-def Mark_task_asDone():
-    pass
-
-def exit_app(L):
-    save_to_file(L)
-    exit()
+def Mark_task_asDone(L):
+    with open('To-Do-List.json','r',encoding='utf-8') as f:
+        L = json.load(f)
+    print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
+    for i,task in enumerate(L,start=1):
+        if task['done']:
+            print('[✅ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
+        else:
+            print('[ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
+    print()
+    print('[ ] = not done, [✅ ] = done')
+    while True:
+        global File_updated_if_markAsDone
+        choice = int(input('Please enter the number of the task you want to mark as done or press 0 to go back to menu: '))
+        if 0<choice<= len(L):
+            if task['done'] == False:
+                L[choice-1] = {'name':L[choice-1]['name'],'done':True}
+                save_to_file(L)
+                File_updated_if_markAsDone = True
+                print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
+                for i,task in enumerate(L,start=1):
+                    if task['done']:
+                        print('[✅ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
+                    else:
+                        print('[ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
+                print()
+                print('[ ] = not done, [✅ ] = done')
+            else:
+                L[choice-1] = {'name':L[choice-1]['name'],'done':False}
+                save_to_file(L)
+                File_updated_if_markAsDone = True
+                print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
+                for i,task in enumerate(L,start=1):
+                    if task['done']:
+                        print('[✅ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
+                    else:
+                        print('[ ]',Fore.RED,i,'.',Style.RESET_ALL,task['name'])
+                print()
+                print('[ ] = not done, [✅ ] = done')
+        elif choice == 0:
+            menu()
+            
+        else:
+            choice = int(input('index out of range, please try again: '))
 
 def delete_task(L):
     global File_updated_if_del
@@ -118,8 +154,11 @@ def delete_task(L):
         L = json.load(f)
     if len(L)> 0:
         print(Fore.GREEN + 'Your Tasks: ' + Style.RESET_ALL)
-        for i,e in enumerate(L,start=1):
-            print('[ ]', Fore.RED , i,'.' , Style.RESET_ALL , e)
+        for i,task in enumerate(L,start=1):
+            if task['done']:
+                print('[✅ ]', Fore.RED , i,'.' , Style.RESET_ALL , task['name'])
+            else:
+                print('[ ]', Fore.RED , i,'.' , Style.RESET_ALL , task['name'])
         print()
         print('[ ] = not done, [✅ ] = done')
     else:
@@ -135,8 +174,11 @@ def delete_task(L):
             File_updated_if_del = True
             if len(L)> 0:
                 print(Fore.GREEN + 'Your Tasks: ' + Style.RESET_ALL)
-                for i,e in enumerate(L,start=1):
-                    print('[ ]', Fore.RED , i,'.' , Style.RESET_ALL , e)
+                for i,task in enumerate(L,start=1):
+                    if task['done']:
+                        print('[✅ ]', Fore.RED , i,'.' , Style.RESET_ALL , task['name'])
+                    else:
+                        print('[ ]', Fore.RED , i,'.' , Style.RESET_ALL , task['name'])
             print()
             print('[ ] = not done, [✅ ] = done')
             choice = int(input('press 1 to delete another task or 0 to go back to Menu: '))
@@ -149,17 +191,17 @@ def delete_task(L):
             print('index out of range, please choose again!')
             continue
     
-
-    
-
 def save_to_file(L):
-    global File_updated
-    if not File_updated_if_del or not File_updated_if_add or not File_updated_if_edit:
+    print(File_updated_if_add,File_updated_if_del,File_updated_if_edit,File_updated_if_markAsDone)
+    if not File_updated_if_del or not File_updated_if_add or not File_updated_if_edit or not File_updated_if_markAsDone:
         with open('To-Do-List.json','w',encoding='utf-8') as f:
             json.dump(L,f, indent=4)
     else:
         print('\n',Fore.GREEN,'File already Saved!',Style.RESET_ALL,'\n')
     
+def exit_app(L):
+    save_to_file(L)
+    exit()
 
 def main():
     menu()

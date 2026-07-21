@@ -1,5 +1,10 @@
 [
-    "aaaaaaaaaaaaaaaaaa",
-    "bbbbbbbbbbbbbbbbbbb",
-    "ccccccccccccccccccc"
+    {
+        "name": "verify and finish the function save_to_file",
+        "done": false
+    },
+    {
+        "name": "check and verify all finalized apps",
+        "done": false
+    }
 ]
