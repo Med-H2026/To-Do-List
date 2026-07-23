@@ -1,14 +1,10 @@
 [
     {
-        "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "check all methods to finalize the app",
         "done": true
     },
     {
-        "name": "bbbbbbbbbbbbbbbbbbbbbbbb",
-        "done": false
-    },
-    {
-        "name": "ccccccccccccccccccc",
-        "done": false
+        "name": "open github and push the updated files",
+        "done": true
     }
 ]
