@@ -2,10 +2,8 @@ import json
 from colorama import Fore,Back,Style,init
 init()
 L=[]
-File_updated_if_add = False # track if file already updated and saved
-File_updated_if_edit = False # track if file already updated and saved
-File_updated_if_del = False # track if file already updated and saved 
-File_updated_if_markAsDone = False # track if file already updated and saved 
+saved = True # track if file already updated and saved
+
 def menu():
     global L
     while True:
@@ -46,11 +44,13 @@ def view_tasks(L):
                 print('[ ]',Fore.RED , i,'.' , Style.RESET_ALL , task['name'])
         print()
         print('[ ] = not done, [✅ ] = done')
-        choice = int(input('press 1 to edit existing task or 0 to go back to Menu: '))
+        choice = int(input('press 1 to edit existing task or 2 to mark a task as done or 0 to go back to Menu: '))
         if choice == 0:
             menu()
         elif choice == 1:
             edit_task(L)
+        elif choice == 2:
+            Mark_task_asDone(L)
         else:
             choice = int(input('Sorry you should press 1 to edit existing task or 0 to go back to Menu: '))
     else:
@@ -58,13 +58,13 @@ def view_tasks(L):
         menu()
 
 def add_task():
-    global File_updated_if_add
+    global saved
     with open('To-Do-List.json','r',encoding='utf-8') as f:
         L = json.load(f)
     task= input('Enter new Task: ')    
     L.append({'name':task, 'done':False})
+    saved = False
     save_to_file(L)
-    File_updated_if_add = True
     print(Fore.GREEN,'Task added successfully!',Style.RESET_ALL)
     choice = int(input('press 0 to go back to Menu or press 1 to add new task:'))
     if choice == 0:
@@ -76,13 +76,13 @@ def add_task():
 def edit_task(L):
     
     while True:
-        global File_updated_if_edit
+        global saved
         index_task = int(input('Kindly type the task number which you want to edit:'))
         new_msg = input('Please type your new Task:')
         if 0<index_task<=len(L):
             L[index_task-1] = {'name':new_msg, 'done':L[index_task-1]['done']}
+            saved = False
             save_to_file(L)
-            File_updated_if_edit = True
             print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
             for i,task in enumerate(L,start=1):
                 if task['done']:
@@ -115,13 +115,13 @@ def Mark_task_asDone(L):
     print()
     print('[ ] = not done, [✅ ] = done')
     while True:
-        global File_updated_if_markAsDone
+        global saved
         choice = int(input('Please enter the number of the task you want to mark as done or press 0 to go back to menu: '))
         if 0<choice<= len(L):
             if task['done'] == False:
                 L[choice-1] = {'name':L[choice-1]['name'],'done':True}
+                saved = False
                 save_to_file(L)
-                File_updated_if_markAsDone = True
                 print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
                 for i,task in enumerate(L,start=1):
                     if task['done']:
@@ -132,8 +132,8 @@ def Mark_task_asDone(L):
                 print('[ ] = not done, [✅ ] = done')
             else:
                 L[choice-1] = {'name':L[choice-1]['name'],'done':False}
+                saved = False
                 save_to_file(L)
-                File_updated_if_markAsDone = True
                 print(Fore.GREEN,'Your Tasks:',Style.RESET_ALL)
                 for i,task in enumerate(L,start=1):
                     if task['done']:
@@ -149,7 +149,7 @@ def Mark_task_asDone(L):
             choice = int(input('index out of range, please try again: '))
 
 def delete_task(L):
-    global File_updated_if_del
+    global saved
     with open('To-Do-List.json','r',encoding='utf-8') as f:
         L = json.load(f)
     if len(L)> 0:
@@ -170,8 +170,8 @@ def delete_task(L):
             menu()
         elif 0<index_to_del<=len(L):
             del L[index_to_del-1]
+            saved = False
             save_to_file(L)
-            File_updated_if_del = True
             if len(L)> 0:
                 print(Fore.GREEN + 'Your Tasks: ' + Style.RESET_ALL)
                 for i,task in enumerate(L,start=1):
@@ -192,16 +192,21 @@ def delete_task(L):
             continue
     
 def save_to_file(L):
-    print(File_updated_if_add,File_updated_if_del,File_updated_if_edit,File_updated_if_markAsDone)
-    if not File_updated_if_del or not File_updated_if_add or not File_updated_if_edit or not File_updated_if_markAsDone:
+    global saved
+    if not saved:
         with open('To-Do-List.json','w',encoding='utf-8') as f:
             json.dump(L,f, indent=4)
+        saved = True
     else:
         print('\n',Fore.GREEN,'File already Saved!',Style.RESET_ALL,'\n')
     
 def exit_app(L):
-    save_to_file(L)
-    exit()
+    if not saved:
+        msg = input('you have unsaved changes, save before exiting? y/n: ')
+        if msg.lower() == 'y':
+            save_to_file(L)
+    print('Goodbye!')
+    exit()        
 
 def main():
     menu()
